@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>近现代史纲要 - 刷题系统</title>
+<style>
+:root {
+  --bg: #0f1119; --bg2: #1a1d2e; --bg3: #252940;
+  --accent: #6c8cff; --accent2: #ff6b9d;
+  --green: #4ade80; --red: #f87171; --yellow: #facc15;
+  --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+  --radius: 12px; --shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; }
+.app { width: 100%; max-width: 720px; padding: 16px; padding-bottom: 80px; }
+.header { text-align: center; padding: 24px 0 16px; }
+.header h1 { font-size: 1.5em; color: var(--accent); margin-bottom: 4px; }
+.header p { color: var(--text2); font-size: 0.85em; }
+.stats { display: flex; gap: 12px; justify-content: center; margin: 12px 0 20px; flex-wrap: wrap; }
+.stat { background: var(--bg2); padding: 10px 16px; border-radius: var(--radius); text-align: center; min-width: 60px; }
+.stat .num { font-size: 1.4em; font-weight: 700; color: var(--accent); }
+.stat .label { font-size: 0.7em; color: var(--text2); margin-top: 2px; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mode-card { background: var(--bg2); border-radius: var(--radius); padding: 20px 16px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+.mode-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
+.mode-card .icon { font-size: 2em; margin-bottom: 8px; }
+.mode-card .title { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
+.mode-card .desc { font-size: 0.75em; color: var(--text2); }
+.screen { display: none; animation: fadeIn 0.3s; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.top-bar { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+.btn-back { background: var(--bg2); border: 1px solid var(--bg3); color: var(--text); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85em; }
+.progress { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 3px; transition: width 0.3s; }
+.progress-text { font-size: 0.75em; color: var(--text2); white-space: nowrap; }
+.q-card { background: var(--bg2); border-radius: var(--radius); padding: 20px; margin: 12px 0; box-shadow: var(--shadow); }
+.q-num { color: var(--accent); font-weight: 700; font-size: 0.85em; margin-bottom: 8px; }
+.q-text { font-size: 1em; line-height: 1.7; margin-bottom: 16px; color: var(--text); }
+.answer-area { background: var(--bg3); border-radius: 8px; padding: 16px; }
+.answer-area textarea { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--bg3); border-radius: 8px; padding: 12px; font-size: 0.9em; resize: vertical; min-height: 80px; font-family: inherit; }
+.btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.9em; font-weight: 600; transition: all 0.2s; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+.btn-outline:hover { background: var(--accent); color: #fff; }
+.btn-ghost { background: transparent; border: 1px solid var(--bg3); color: var(--text2); }
+.btn-green { background: var(--green); color: #0f1119; }
+.btn-red { background: var(--red); color: #fff; }
+.reveal-box { background: var(--bg); border-left: 3px solid var(--accent); padding: 16px; border-radius: 0 8px 8px 0; margin-top: 12px; line-height: 1.8; font-size: 0.9em; color: var(--text); white-space: pre-wrap; display: none; }
+.reveal-box.show { display: block; animation: fadeIn 0.3s; }
+.nav-row { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; gap: 8px; }
+.star-btn { background: none; border: none; font-size: 1.8em; cursor: pointer; line-height: 1; transition: transform 0.2s; }
+.star-btn:active { transform: scale(1.3); }
+.cat-tabs { display: flex; gap: 8px; overflow-x: auto; padding: 8px 0; margin-bottom: 8px; }
+.cat-tab { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--bg3); background: var(--bg2); color: var(--text2); cursor: pointer; font-size: 0.8em; white-space: nowrap; transition: all 0.2s; }
+.cat-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.slider-row { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+.slider-row input[type=range] { flex: 1; accent-color: var(--accent); }
+.empty { text-align: center; padding: 40px 20px; color: var(--text3); }
+.empty .icon { font-size: 3em; margin-bottom: 12px; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg2); border-top: 1px solid var(--bg3); display: flex; justify-content: center; gap: 40px; padding: 12px; z-index: 100; }
+.nav-btn { background: none; border: none; color: var(--text2); font-size: 0.8em; cursor: pointer; padding: 8px 16px; border-radius: 8px; transition: all 0.2s; }
+.nav-btn:hover, .nav-btn.active { color: var(--accent); background: var(--bg3); }
+.fav-item { background: var(--bg2); border-radius: var(--radius); padding: 16px; margin: 8px 0; cursor: pointer; }
+.fav-item:hover { border-left: 3px solid var(--accent); }
+.fav-item .fav-q { font-size: 0.85em; margin-bottom: 6px; color: var(--text); }
+.fav-item .fav-a { font-size: 0.75em; color: var(--text3); max-height: 60px; overflow: hidden; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 10px 24px; border-radius: 20px; font-size: 0.85em; z-index: 200; animation: popIn 0.3s; pointer-events: none; }
+@keyframes popIn { from { transform: translateX(-50%) scale(0.8); opacity: 0; } to { transform: translateX(-50%) scale(1); opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="header"><h1>📖 近现代史纲要</h1><p>简答题刷题系统 · 共<span id="total-count">13</span>题</p></div>
+  <div class="stats" id="stats-bar"></div>
+
+  <!-- Home -->
+  <div class="screen active" id="screen-home">
+    <div class="modes">
+      <div class="mode-card" onclick="startMode('seq')"><div class="icon">📋</div><div class="title">顺序刷题</div><div class="desc">按章节顺序逐题练习</div></div>
+      <div class="mode-card" onclick="startMode('random')"><div class="icon">🎲</div><div class="title">随机刷题</div><div class="desc">随机抽题，模拟考试</div></div>
+      <div class="mode-card" onclick="startMode('wrong')"><div class="icon">📝</div><div class="title">错题本</div><div class="desc">只做之前标记错误的</div></div>
+      <div class="mode-card" onclick="startMode('review')"><div class="icon">👀</div><div class="title">浏览模式</div><div class="desc">直接看题和答案</div></div>
+    </div>
+  </div>
+
+  <!-- Quiz -->
+  <div class="screen" id="screen-quiz">
+    <div class="top-bar">
+      <button class="btn-back" onclick="goHome()">← 返回</button>
+      <div class="progress"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <span class="progress-text" id="progress-text">0/0</span>
+    </div>
+    <div class="cat-tabs" id="cat-tabs"></div>
+    <div id="quiz-content"></div>
+    <div class="nav-row">
+      <button class="btn btn-outline" id="btn-prev" onclick="prevQ()">上一题</button>
+      <button class="star-btn" id="star-btn" onclick="toggleStar()">☆</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextQ()">下一题</button>
+    </div>
+  </div>
+
+  <!-- Random setup -->
+  <div class="screen" id="screen-random-setup">
+    <div class="top-bar"><button class="btn-back" onclick="goHome()">← 返回</button><span style="color:var(--text2);font-size:0.85em">随机刷题设置</span><span></span></div>
+    <div class="q-card"><p style="margin-bottom:12px">选择题量：<b id="rand-count">5</b> 题</p>
+    <div class="slider-row"><span style="color:var(--text3)">1</span><input type="range" min="1" max="13" value="5" id="rand-slider" oninput="document.getElementById('rand-count').textContent=this.value"><span style="color:var(--text3)">13</span></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="startRandom()">开始刷题</button></div>
+  </div>
+
+  <!-- Favorites -->
+  <div class="screen" id="screen-fav">
+    <div class="top-bar"><button class="btn-back" onclick="goHome()">← 返回</button><span style="color:var(--accent);font-weight:700">⭐ 收藏夹</span><span></span></div>
+    <div id="fav-list"></div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" id="nav-home" onclick="goHome()">🏠 首页</button>
+  <button class="nav-btn" id="nav-fav" onclick="showFav()">⭐ 收藏</button>
+</div>
+<div id="toast" style="display:none" class="toast"></div>
+
+<script>
+// ====== 题库 ======
+const ALL_QUESTIONS = [
+  {id:"q01",cat:"半殖民地半封建",q:"为什么说鸦片战争后，封建的中国变成半封建的中国？",a:"（1）外国资本-帝国主义列强用武力打开中国的门户，把中国卷入世界资本主义经济体系和世界市场之中。\n（2）随着外国资本主义的入侵，洋纱、洋布等商品在中国大量倾销，逐渐使中国的农业与家庭手工业分离。一方面，破坏了中国自给自足的自然经济基础，破坏了城市的手工业和农民的家庭手工业；另一方面，则促进了中国城乡商品经济的发展，给中国资本主义的产生造成了某些客观条件。\n（3）破产的农民和手工业者成了产业工人的后备军。一批官僚、买办、地主、商人投资兴办新式工业。中国出现了资本主义生产关系。"},
+  {id:"q02",cat:"半殖民地半封建",q:"近代中国半殖民地半封建社会的基本特征有哪些？",a:"（1）资本-帝国主义侵略势力不但逐步操纵了中国的财政和经济命脉，而且逐步控制了中国的政治，日益成为支配中国的决定性力量。\n（2）中国的封建势力日益衰败并同外国侵略势力勾结，成为资本-帝国主义压迫、奴役中国人民的社会基础和统治支柱。\n（3）中国自然经济的基础虽然遭到破坏，但是封建剥削制度的根基即封建地主的土地所有制依然在广大地区内保持着，成为中国发展进步的严重障碍。\n（4）中国新兴的民族资本主义经济在帝国主义和封建主义的压迫下，发展很缓慢，力量很软弱，而且它的大部分与外国资本-帝国主义和本国封建主义都有或多或少的联系。\n（5）近代中国各地区经济、政治和文化的发展极不平衡。后来帝国主义列强还分别支持不同的政治势力以分裂中国，使中国处于不统一状态。\n（6）在资本-帝国主义和封建主义的双重压迫下，中国的广大人民尤其是农民日益贫困化以至大批地破产，过着饥寒交迫和毫无政治权利的生活。"},
+  {id:"q03",cat:"洋务运动",q:"洋务运动的历史作用。",a:"（1）通过军事工业和民用企业的创办，客观上对中国的早期工业和民族资本主义的发展起了某些促进作用。\n（2）通过创办新式学堂、派遣留学生，培养了一批通晓洋务的人才；通过翻译一批近代自然科学书籍，给当时的中国带来了新的知识，使人们开阔了眼界。\n（3）伴随着资本主义生产方式的出现，传统的"重本抑末"等观念受到冲击，社会风气和价值观念开始变化，工商业者的地位上升。"},
+  {id:"q04",cat:"戊戌变法",q:"戊戌维新变法失败的原因。",a:"客观原因：以慈禧太后为首的反对变法的守旧势力相当强大，新旧势力对比的差距预示着这场运动难以取胜。\n\n主观原因（维新派自身的局限性）：\n（1）不敢否定封建主义。在政治上不敢根本否定封建君主制度；在经济上虽然要求发展民族资本主义，却未触及封建主义的经济基础——封建土地所有制；在思想上，他们虽然提倡学习西学，却仍要打着孔子的旗号，借古代圣贤之名"托古改制"。\n（2）对帝国主义抱有幻想。他们虽然在大声疾呼救亡图存，却又幻想西方列强能帮助自己变法维新，结果却是处处碰壁。\n（3）惧怕人民群众。维新派的活动基本上局限于官僚士大夫和知识分子的小圈子。他们不但脱离了人民群众，而且惧怕甚至仇视人民群众，因此，运动未能得到人民群众的支持。"},
+  {id:"q05",cat:"五四运动",q:"五四运动发生的条件。",a:"五四运动是在新的时代条件和社会历史条件下发生的。\n（1）新的社会力量的成长、壮大。五四运动前夕，产业工人已达到200万左右，为五四运动准备了广泛的群众基础。\n（2）新文化掀起了思想解放的潮流。受影响的年轻一代知识界，尤其是那些具有初步共产主义思想的知识分子，为五四运动准备了最初的群众队伍和骨干力量。\n（3）俄国十月革命对中国的影响。\n（4）巴黎和会外交的失败成为五四运动的直接导火线。"},
+  {id:"q06",cat:"五四运动",q:"五四运动的历史意义。",a:"（1）标志着中国新民主主义革命的开端。\n（2）孕育了以爱国、进步、民主、科学为主要内容的五四精神。\n（3）实现了中国人民和中华民族自鸦片战争以来的第一次全面觉醒。\n（4）五四运动以全民族的搏击培育了永久奋斗的伟大传统。"},
+  {id:"q07",cat:"红军长征",q:"遵义会议的历史意义。",a:"（1）遵义会议是党的历史上一个生死攸关的转折点。\n（2）遵义会议事实上确立了毛泽东在党中央和红军的领导地位，开始确立以毛泽东为主要代表的马克思主义正确路线在党中央的领导地位，开始形成以毛泽东同志为核心的第一代中央领导集体，在最危急关头挽救了党、挽救了红军、挽救了中国革命。\n（3）遵义会议开启了中国共产党独立自主解决中国革命实际问题的新阶段。"},
+  {id:"q08",cat:"红军长征",q:"红军长征的原因及其胜利的意义。",a:"原因：1934年9月，国民党军队加紧对中央革命根据地腹地发动进攻，红军第五次反围剿失败已无在原地扭转战局的可能。10月，中共中央、中革军委率中央红军主力等8.6万余人踏上战略转移的漫漫征程，开始了世界历史上前所未有的壮举。\n\n意义：\n（1）中国工农红军长征是一次理想信念的伟大远征，是一次检验真理的伟大远征，是一次唤醒民众的伟大远征，是一次开创新局的伟大远征。\n（2）长征的胜利，极大地促进了党的政治上和思想上成熟。\n（3）长征的胜利，是中国革命转危为安的关键。\n（4）长征宣告了国民党反动派消灭中国共产党和红军的图谋彻底失败，宣告了中国共产党和红军肩负着民族希望胜利实现了北上抗日的战略转移，实现了中国共产党和中国革命事业从挫折走向胜利的伟大转折，开启了中国共产党为实现民族独立、人民解放而斗争的新的伟大进军。\n（5）长征铸就了伟大的长征精神。\n（6）长征一结束，开启了中国革命的新局面。"},
+  {id:"q09",cat:"革命道路",q:"中国革命新道路"新"在哪里？",a:"（1）相比于"城市中心论"，创新了中国革命道路：建立农村革命根据地，农村包围城市武装夺取政权。\n（2）在实践上，以中国共产党领导的土地革命为基本内容。农民成为中国革命的主力军。\n（3）相比于旧的传统体制，对照革命以来走过的弯路、错路，农村包围城市武装夺取政权的革命道路是全新的。"},
+  {id:"q10",cat:"抗日战争",q:"抗日民主根据地的建设。",a:"抗日民主根据地是认真贯彻和实现全面抗战路线，争取胜利的坚强阵地。1941年中共中央批准《陕甘宁边区施政纲领》，全面体现了中国共产党关于根据地建设的基本方针。\n（1）加强政权建设，是抗日根据地建设的首要的、根本的任务。根据地政权是中国共产党领导的抗日民族统一战线性质的政权，在工作人员分配上实行共产党员、党外进步人士和中间派各占1/3的三三制原则。\n（2）经济建设上，停止实行没收地主土地的政策，普遍实行减租减息，以减轻农民所受的封建剥削，提高他们的抗日和生产的积极性；同时实行交租交息，以利于联合地主阶级抗日。同时，为了克服根据地面临的严重困难局面，发展大生产运动。\n（3）在延安创办了中国人民抗日军事政治大学、鲁迅艺术学院、马列学院等一批干部学校和专门学校大量吸收了知识分子。同时还创办了大批中小学和开展冬学运动。哲学社会科学和自然科学研究也得到重视。"},
+  {id:"q11",cat:"抗日战争",q:"抗日战争防御阶段正面战场为何几乎屡战屡败？",a:"客观原因：日军在力量对比上占优势。\n\n主观原因：\n（1）国民党政府执行的是片面抗战路线，即不敢放手发动和武装群众，实行单纯的政府和正规军的抗战。\n（2）在战略技术上，没有采取积极防御的方针，而是进行单纯的阵地防御战。"},
+  {id:"q12",cat:"抗日战争",q:"中国共产党为什么是抗日战争的中流砥柱？",a:"（1）倡导并坚定维护抗日民族统一战线，推动中国人民团结起来。中国共产党坚持把中日矛盾放在首位，在总结反"摩擦"经验的基础上，制定了"发展进步势力，争取中间势力，孤立顽固势力"的策略总方针，始终坚持维护和巩固抗日民族统一战线。\n（2）提出全面抗战路线和持久战方针，给人民以弱胜强的正确战争指导。共产党强调要打倒帝国主义关键在于实行全国军事总动员、全国人民总动员，把抗日战争发展成全民族的抗战，最大限度地动员了全国军民共同抗战，成为凝聚全民族力量的杰出组织者和鼓舞者。全面抗战爆发后，毛泽东针对各种舆论系统地阐述了抗日战争的特点、前途和发展规律，阐明了持久战的总方针，使全民族认清了抗日战争的性质和发展进程，对全国抗战起了积极作用。\n（3）开辟敌后战场、广泛开展游击战争，使日军陷入人民战争的汪洋大海。中国抗日战争是由两个战场组成，国民党领导的正面战场和共产党领导的敌后战场。共产党在敌后建立抗日根据地，采取开展游击战争，有力的打击了日军，牵制了日军大量的军力，减轻了正面战场的压力，在促进战争转入相持阶段起了重要作用。尤其是在战争进入相持阶段后，正面战场的作战力下降，转入次要位置。敌后游击战则成为主要的抗日作战方式。中国共产党在抗日根据地大力发展经济和文化建设，帮助根据地人民渡过难关。\n（4）以牺牲精神和模范行动鼓舞民众抗战到底，成为夺取战争胜利的民族先锋。中国共产党人始终站在号召、带领和团结全民族抗战的第一线，以自己最富于牺牲的爱国主义精神、不怕流血牺牲的模范行动，支撑起全民族救亡图存的希望，成为夺取抗战胜利的民族先锋。\n（5）把党建设成坚强领导核心。提出"马克思主义的中国化"命题，统一了全党的思想和步调，推动了各项工作迅速发展。系统阐明新民主主义理论，从思想上武装全党，极大地增强了中国共产党人参加和领导抗日战争以及整个新民主主义革命的自觉性。开展整风运动，坚持马克思主义同中国实际相结合的正确方向，使实事求是的思想路线在全党范围确立起来。中共七大为建立新民主主义的新中国制定了正确路线方针政策。"},
+  {id:"q13",cat:"过渡时期",q:"过渡时期总路线反映了历史的必然性。",a:"（1）社会主义工业化是实现国家独立富强的首要条件。\n（2）资本主义经济力量弱小，发展困难，不可能成为中国工业起飞的基础。\n（3）对个体农业进行社会主义改造，是保证工业发展、实现国家工业化的一个必要条件。\n（4）当时的国际环境也促使中国选择社会主义。"}
+];
+
+// ====== 状态 ======
+const LS_WRONG = 'jxdsw_wrong', LS_FAV = 'jxdsw_fav';
+let wrongSet = new Set(JSON.parse(localStorage.getItem(LS_WRONG)||'[]'));
+let favSet = new Set(JSON.parse(localStorage.getItem(LS_FAV)||'[]'));
+let mode = '', queue = [], idx = 0, curCat = 'all', reviewMode = false;
+
+function save() {
+  localStorage.setItem(LS_WRONG, JSON.stringify([...wrongSet]));
+  localStorage.setItem(LS_FAV, JSON.stringify([...favSet]));
+}
+
+// ====== 导航 ======
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+function goHome() {
+  mode=''; queue=[]; idx=0; reviewMode=false;
+  showScreen('home'); updateStats();
+  document.getElementById('nav-home').classList.add('active');
+  document.getElementById('nav-fav').classList.remove('active');
+}
+function updateStats() {
+  document.getElementById('total-count').textContent = ALL_QUESTIONS.length;
+  document.getElementById('stats-bar').innerHTML =
+    `<div class="stat"><div class="num">${ALL_QUESTIONS.length}</div><div class="label">总题数</div></div>`+
+    `<div class="stat"><div class="num" style="color:var(--red)">${wrongSet.size}</div><div class="label">错题</div></div>`+
+    `<div class="stat"><div class="num" style="color:var(--yellow)">${favSet.size}</div><div class="label">收藏</div></div>`;
+}
+
+// ====== Toast ======
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(()=>t.style.display='none', 1500);
+}
+
+// ====== 模式 ======
+function startMode(m) {
+  if (m==='random') { showScreen('random-setup'); return; }
+  mode = m; reviewMode = (m==='review');
+  if (m==='wrong') { queue = ALL_QUESTIONS.filter(q=>wrongSet.has(q.id)); if(!queue.length){toast('错题本为空！');return;} }
+  else queue = [...ALL_QUESTIONS];
+  if (m==='seq'||m==='review') buildCatTabs();
+  idx = 0;
+  showScreen('quiz'); renderQ();
+  document.getElementById('nav-home').classList.remove('active');
+}
+function startRandom() {
+  const n = parseInt(document.getElementById('rand-slider').value);
+  const pool = [...ALL_QUESTIONS];
+  // Fisher-Yates shuffle
+  for (let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  queue = pool.slice(0, n);
+  mode='random'; reviewMode=false; idx=0;
+  showScreen('quiz'); renderQ();
+  document.getElementById('nav-home').classList.remove('active');
+}
+function buildCatTabs() {
+  const cats = ['all',...new Set(ALL_QUESTIONS.map(q=>q.cat))];
+  document.getElementById('cat-tabs').innerHTML = cats.map(c=>
+    `<button class="cat-tab ${c===curCat?'active':''}" onclick="filterCat('${c}')">${c==='all'?'全部':c}</button>`
+  ).join('');
+}
+function filterCat(c) {
+  curCat = c;
+  queue = (c==='all'?[...ALL_QUESTIONS]:ALL_QUESTIONS.filter(q=>q.cat===c));
+  idx = 0;
+  buildCatTabs();
+  renderQ();
+}
+
+// ====== 渲染题目 ======
+function renderQ() {
+  if (!queue.length) { document.getElementById('quiz-content').innerHTML='<div class="empty"><div class="icon">🎉</div><p>没有题目了</p></div>'; return; }
+  const q = queue[idx];
+  const total = queue.length;
+  document.getElementById('progress-fill').style.width = ((idx+1)/total*100)+'%';
+  document.getElementById('progress-text').textContent = (idx+1)+'/'+total;
+
+  const isFav = favSet.has(q.id);
+  document.getElementById('star-btn').textContent = isFav ? '★' : '☆';
+  document.getElementById('star-btn').style.color = isFav ? 'var(--yellow)' : 'var(--text3)';
+
+  const html = `
+    <div class="q-card">
+      <div class="q-num">第 ${idx+1} 题 · ${q.cat}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="answer-area">
+        ${reviewMode ? '' : '<textarea placeholder="输入你的答案……"></textarea>'}
+        <div class="btn-row">
+          ${reviewMode ? '' : '<button class="btn btn-primary" onclick="revealAnswer(this)">显示答案</button>'}
+          <button class="btn btn-green" onclick="markCorrect()" style="${reviewMode?'':'display:none'}" id="btn-correct">✓ 答对了</button>
+          <button class="btn btn-red" onclick="markWrong()" style="${reviewMode?'':'display:none'}" id="btn-wrong">✗ 答错了</button>
+        </div>
+        <div class="reveal-box ${reviewMode?'show':''}" id="reveal-box">${q.a.replace(/\n/g,'<br>')}</div>
+      </div>
+    </div>`;
+  document.getElementById('quiz-content').innerHTML = html;
+  if (reviewMode) {
+    document.getElementById('btn-correct').style.display = '';
+    document.getElementById('btn-wrong').style.display = '';
+  }
+  document.getElementById('btn-prev').style.visibility = idx>0?'visible':'hidden';
+  document.getElementById('btn-next').textContent = idx<total-1?'下一题':'完成';
+}
+
+function revealAnswer(btn) {
+  document.getElementById('reveal-box').classList.add('show');
+  document.getElementById('btn-correct').style.display = '';
+  document.getElementById('btn-wrong').style.display = '';
+  btn.style.display = 'none';
+}
+function markCorrect() {
+  const q = queue[idx];
+  wrongSet.delete(q.id); save();
+  advance();
+}
+function markWrong() {
+  const q = queue[idx];
+  wrongSet.add(q.id); save();
+  advance();
+}
+function advance() {
+  if (idx < queue.length-1) { idx++; renderQ(); }
+  else { toast('全部完成！'); goHome(); }
+}
+function prevQ() { if(idx>0){idx--;renderQ();} }
+function nextQ() {
+  const q = queue[idx];
+  const box = document.getElementById('reveal-box');
+  if (!reviewMode && !(box&&box.classList.contains('show'))) {
+    // Auto reveal
+    if (box) box.classList.add('show');
+    const cbtn = document.getElementById('btn-correct');
+    const wbtn = document.getElementById('btn-wrong');
+    if (cbtn) cbtn.style.display = '';
+    if (wbtn) wbtn.style.display = '';
+    const rbtn = document.querySelector('.answer-area .btn-primary');
+    if (rbtn) rbtn.style.display = 'none';
+    return;
+  }
+  advance();
+}
+function toggleStar() {
+  const q = queue[idx];
+  if (favSet.has(q.id)) { favSet.delete(q.id); toast('已取消收藏'); }
+  else { favSet.add(q.id); toast('已收藏 ⭐'); }
+  save(); renderQ();
+}
+
+// ====== 收藏夹 ======
+function showFav() {
+  mode=''; showScreen('fav');
+  document.getElementById('nav-fav').classList.add('active');
+  document.getElementById('nav-home').classList.remove('active');
+  const favs = ALL_QUESTIONS.filter(q=>favSet.has(q.id));
+  const html = favs.length ? favs.map(q=>`
+    <div class="fav-item" onclick="viewFavQ('${q.id}')">
+      <div class="fav-q">${q.q}</div>
+      <div class="fav-a">${q.a.substring(0,80)}...</div>
+    </div>`).join('') : '<div class="empty"><div class="icon">⭐</div><p>还没有收藏题目</p></div>';
+  document.getElementById('fav-list').innerHTML = html;
+}
+function viewFavQ(id) {
+  queue = ALL_QUESTIONS.filter(q=>q.id===id);
+  idx = 0; reviewMode = true; mode = 'review';
+  showScreen('quiz'); renderQ();
+}
+
+// ====== 初始化 ======
+updateStats();
+</script>
+</body>
+</html>
