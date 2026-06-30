@@ -23,7 +23,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-s
 .stat .num { font-size: 1.4em; font-weight: 700; color: var(--accent); }
 .stat .label { font-size: 0.7em; color: var(--text2); margin-top: 2px; }
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.mode-card { background: var(--bg2); border-radius: var(--radius); padding: 20px 16px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+.mode-card { background: var(--bg2); border-radius: var(--radius); padding: 20px 16px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; font-family: inherit; color: var(--text); font-size: 1em; text-align: left; display: block; width: 100%; }
 .mode-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow); }
 .mode-card .icon { font-size: 2em; margin-bottom: 8px; }
 .mode-card .title { font-weight: 700; font-size: 1em; margin-bottom: 4px; }
@@ -81,10 +81,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-s
   <!-- Home -->
   <div class="screen active" id="screen-home">
     <div class="modes">
-      <div class="mode-card" onclick="startMode('seq')"><div class="icon">📋</div><div class="title">顺序刷题</div><div class="desc">按章节顺序逐题练习</div></div>
-      <div class="mode-card" onclick="startMode('random')"><div class="icon">🎲</div><div class="title">随机刷题</div><div class="desc">随机抽题，模拟考试</div></div>
-      <div class="mode-card" onclick="startMode('wrong')"><div class="icon">📝</div><div class="title">错题本</div><div class="desc">只做之前标记错误的</div></div>
-      <div class="mode-card" onclick="startMode('review')"><div class="icon">👀</div><div class="title">浏览模式</div><div class="desc">直接看题和答案</div></div>
+      <button class="mode-card" onclick="startMode('seq')"><span class="icon">📋</span><span class="title">顺序刷题</span><span class="desc">按章节顺序逐题练习</span></button>
+      <button class="mode-card" onclick="startMode('random')"><span class="icon">🎲</span><span class="title">随机刷题</span><span class="desc">随机抽题，模拟考试</span></button>
+      <button class="mode-card" onclick="startMode('wrong')"><span class="icon">📝</span><span class="title">错题本</span><span class="desc">只做之前标记错误的</span></button>
+      <button class="mode-card" onclick="startMode('review')"><span class="icon">👀</span><span class="title">浏览模式</span><span class="desc">直接看题和答案</span></button>
     </div>
   </div>
 
@@ -301,7 +301,7 @@ function showFav() {
   document.getElementById('nav-home').classList.remove('active');
   const favs = ALL_QUESTIONS.filter(q=>favSet.has(q.id));
   const html = favs.length ? favs.map(q=>`
-    <div class="fav-item" onclick="viewFavQ('${q.id}')">
+    <div class="fav-item" role="button" tabindex="0" onclick="viewFavQ('${q.id}')" onkeydown="if(event.key==='Enter')viewFavQ('${q.id}')">
       <div class="fav-q">${q.q}</div>
       <div class="fav-a">${q.a.substring(0,80)}...</div>
     </div>`).join('') : '<div class="empty"><div class="icon">⭐</div><p>还没有收藏题目</p></div>';
@@ -315,6 +315,7 @@ function viewFavQ(id) {
 
 // ====== 初始化 ======
 updateStats();
+document.querySelector('.header p').insertAdjacentHTML('beforeend',' <span style="color:var(--green);font-size:0.7em">●</span>');
 </script>
 </body>
 </html>
